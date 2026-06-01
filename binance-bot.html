@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#080810">
+<title>Short Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --surface: #10101e;
+  --surface2: #16162a;
+  --border: #22223a;
+  --text: #e8e8f8;
+  --muted: #5a5a8a;
+  --green: #00e676;
+  --red: #ff1744;
+  --yellow: #ffd600;
+  --blue: #448aff;
+  --purple: #e040fb;
+  --orange: #ff6d00;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #10101e 0%, #16162a 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.logo {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #448aff, #e040fb);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; box-shadow: 0 4px 12px rgba(68,138,255,0.4);
+}
+.title { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+.subtitle { font-size: 11px; color: var(--muted); margin-top: 1px; display: flex; align-items: center; gap: 5px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); display: inline-block; }
+.dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.btn-start {
+  background: linear-gradient(135deg, #00e676, #00b248);
+  color: #000; border: none; border-radius: 10px;
+  padding: 10px 20px; font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,230,118,0.3);
+  transition: all .15s;
+}
+.btn-start:active { transform: scale(0.96); }
+.btn-stop {
+  background: linear-gradient(135deg, #ff1744, #b71c1c);
+  color: #fff; border: none; border-radius: 10px;
+  padding: 10px 20px; font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255,23,68,0.3);
+}
+
+/* TABS */
+.tabs {
+  display: flex; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  flex: 1; padding: 13px 4px; text-align: center;
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  border: none; background: none;
+  font-family: 'Space Grotesk', sans-serif;
+  border-bottom: 2px solid transparent; cursor: pointer;
+  transition: all .15s; letter-spacing: 0.3px;
+}
+.tab.active { color: var(--blue); border-color: var(--blue); }
+
+/* CONTENT */
+.content { padding: 14px; padding-bottom: 50px; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* TOTAL PNL BAR */
+.pnl-bar {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px;
+  margin-bottom: 14px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.pnl-bar-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+.pnl-bar-value { font-size: 28px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.pnl-bar-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px 14px;
+  transition: border-color .2s;
+}
+.stat-label { font-size: 11px; color: var(--muted); font-weight: 500; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 26px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px;
+  font-weight: 600; margin-bottom: 14px;
+}
+
+/* TAGS */
+.tag {
+  display: inline-block; font-size: 10px;
+  padding: 3px 8px; border-radius: 6px; font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.tag-green { background: rgba(0,230,118,.15); color: var(--green); }
+.tag-red { background: rgba(255,23,68,.15); color: var(--red); }
+.tag-yellow { background: rgba(255,214,0,.15); color: var(--yellow); }
+.tag-blue { background: rgba(68,138,255,.15); color: var(--blue); }
+.tag-gray { background: rgba(90,90,138,.2); color: var(--muted); }
+.tag-purple { background: rgba(224,64,251,.15); color: var(--purple); }
+
+/* POSITION CARD */
+.pos-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px;
+  margin-bottom: 10px;
+  animation: fadeUp .25s ease;
+}
+.pos-card.profit { border-color: rgba(0,230,118,.25); }
+.pos-card.loss { border-color: rgba(255,23,68,.2); }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+.pos-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.pos-sym { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.pos-pnl { font-size: 18px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+.pos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.pos-item { }
+.pos-item-label { font-size: 10px; color: var(--muted); font-weight: 500; margin-bottom: 2px; }
+.pos-item-value { font-size: 13px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+/* PROGRESS BAR */
+.progress-wrap { margin-bottom: 12px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+.progress-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width .5s ease; }
+
+/* ACTION BUTTONS */
+.pos-actions { display: flex; gap: 8px; }
+.btn-tp {
+  flex: 1; padding: 10px;
+  background: rgba(0,230,118,.15);
+  border: 1px solid rgba(0,230,118,.3);
+  color: var(--green); border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: all .15s;
+}
+.btn-tp:active { background: rgba(0,230,118,.3); transform: scale(0.97); }
+.btn-sl {
+  flex: 1; padding: 10px;
+  background: rgba(255,23,68,.15);
+  border: 1px solid rgba(255,23,68,.3);
+  color: var(--red); border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: all .15s;
+}
+.btn-sl:active { background: rgba(255,23,68,.3); transform: scale(0.97); }
+.btn-market {
+  flex: 1; padding: 10px;
+  background: rgba(68,138,255,.15);
+  border: 1px solid rgba(68,138,255,.3);
+  color: var(--blue); border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: all .15s;
+}
+.btn-market:active { background: rgba(68,138,255,.3); transform: scale(0.97); }
+
+/* SCANNER */
+.scan-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.scan-row:last-child { border-bottom: none; }
+.scan-sym { font-size: 14px; font-weight: 700; }
+.scan-sub { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+.scan-pct { font-size: 16px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+/* LOG */
+.log-box {
+  background: #050508; border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px;
+  height: 430px; overflow-y: auto;
+  font-size: 11px; line-height: 2;
+  font-family: 'JetBrains Mono', monospace;
+}
+.log-line { display: flex; gap: 10px; }
+.log-time { color: var(--muted); flex-shrink: 0; }
+.log-info { color: #5577aa; }
+.log-success { color: var(--green); }
+.log-error { color: var(--red); }
+.log-warn { color: var(--yellow); }
+.log-trade { color: var(--blue); font-weight: 600; }
+
+/* SETTINGS */
+.setting-row { margin-bottom: 22px; }
+.setting-label { font-size: 13px; color: var(--text); font-weight: 500; display: flex; justify-content: space-between; margin-bottom: 8px; }
+.setting-val { color: var(--blue); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+input[type=range] { width: 100%; accent-color: var(--blue); height: 4px; cursor: pointer; }
+.range-ends { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+.cfg-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.cfg-row:last-child { border-bottom: none; }
+.cfg-key { font-size: 13px; color: var(--muted); font-weight: 500; }
+.cfg-val { font-size: 14px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+.empty { text-align: center; color: var(--muted); font-size: 13px; padding: 36px 0; line-height: 1.8; }
+.alert { background: rgba(255,214,0,.08); border: 1px solid rgba(255,214,0,.2); border-radius: 12px; padding: 14px; font-size: 12px; color: var(--yellow); margin-bottom: 14px; line-height: 1.7; }
+
+/* HISTORY ROW */
+.hist-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.hist-row:last-child { border-bottom: none; }
+.hist-sym { font-size: 14px; font-weight: 700; }
+.hist-detail { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+.hist-pnl { font-size: 16px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">⚡</div>
+    <div>
+      <div class="title">Short Bot</div>
+      <div class="subtitle">
+        <span class="dot" id="dot"></span>
+        <span id="headerStatus">Durduruldu</span>
+      </div>
+    </div>
+  </div>
+  <button class="btn-start" id="mainBtn" onclick="toggleBot()">Başlat</button>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('dashboard',this)">Panel</button>
+  <button class="tab" onclick="showTab('positions',this)">İşlemler</button>
+  <button class="tab" onclick="showTab('scanner',this)">Tarama</button>
+  <button class="tab" onclick="showTab('settings',this)">Ayarlar</button>
+  <button class="tab" onclick="showTab('logs',this)">Loglar</button>
+</div>
+
+<div class="content">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <!-- TOTAL PNL -->
+    <div class="pnl-bar">
+      <div>
+        <div class="pnl-bar-label">📊 Toplam Açık PnL</div>
+        <div class="pnl-bar-value" id="totalOpenPnl">$0.00</div>
+        <div class="pnl-bar-sub" id="totalOpenPnlSub">0 açık pozisyon</div>
+      </div>
+      <div style="text-align:right">
+        <div class="pnl-bar-label">💰 Gerçekleşen PnL</div>
+        <div class="pnl-bar-value" id="totalRealizedPnl" style="font-size:20px">$0.00</div>
+        <div class="pnl-bar-sub" id="totalRealizedSub">0 kapalı işlem</div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Açık Pozisyon</div>
+        <div class="stat-value" id="statOpen" style="color:var(--blue)">0</div>
+        <div class="stat-sub" id="statOpenSub">max 5</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Kazanma Oranı</div>
+        <div class="stat-value" id="statWR">—</div>
+        <div class="stat-sub" id="statWRSub">0 işlem</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">En İyi İşlem</div>
+        <div class="stat-value" id="statBest" style="color:var(--green);font-size:20px">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">En Kötü İşlem</div>
+        <div class="stat-value" id="statWorst" style="color:var(--red);font-size:20px">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚙️ Aktif Strateji</div>
+      <div id="cfgPreview"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔴 Açık Pozisyonlar</div>
+      <div id="dashPos"><div class="empty">Bot başlatıldığında<br>eşiği aşan coinlere short açılır</div></div>
+    </div>
+  </div>
+
+  <!-- POSITIONS -->
+  <div class="page" id="page-positions">
+    <div id="openPosSection"></div>
+    <div class="card" id="histSection">
+      <div class="card-title">📋 İşlem Geçmişi</div>
+      <div id="histList"><div class="empty">Henüz kapanan işlem yok</div></div>
+    </div>
+  </div>
+
+  <!-- SCANNER -->
+  <div class="page" id="page-scanner">
+    <div class="card">
+      <div class="card-title" id="scanTitle">🔍 Hareketli Coinler</div>
+      <div id="scanList"><div class="empty">Botu başlatın —<br>tüm Futures coinleri taranır</div></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="page" id="page-settings">
+    <div class="alert">⚠️ Simülasyon modu aktif — gerçek para kullanılmaz.</div>
+    <div class="card">
+      <div class="card-title">⚙️ Strateji Ayarları</div>
+      <div class="setting-row">
+        <div class="setting-label">Yükseliş Eşiği <span class="setting-val" id="lbl-rise">%30</span></div>
+        <input type="range" min="5" max="200" value="30" id="cfg-rise" oninput="updateCfg()">
+        <div class="range-ends"><span>%5</span><span>%200</span></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">Pozisyon Büyüklüğü <span class="setting-val" id="lbl-pos">$100</span></div>
+        <input type="range" min="10" max="1000" step="10" value="100" id="cfg-pos" oninput="updateCfg()">
+        <div class="range-ends"><span>$10</span><span>$1000</span></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">Stop Loss <span class="setting-val" id="lbl-sl">%50</span></div>
+        <input type="range" min="5" max="100" value="50" id="cfg-sl" oninput="updateCfg()">
+        <div class="range-ends"><span>%5</span><span>%100</span></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">Take Profit <span class="setting-val" id="lbl-tp">%15</span></div>
+        <input type="range" min="3" max="100" value="15" id="cfg-tp" oninput="updateCfg()">
+        <div class="range-ends"><span>%3</span><span>%100</span></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">Kaldıraç <span class="setting-val" id="lbl-lev">10x</span></div>
+        <input type="range" min="1" max="50" value="10" id="cfg-lev" oninput="updateCfg()">
+        <div class="range-ends"><span>1x</span><span>50x</span></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">Max Açık Pozisyon <span class="setting-val" id="lbl-max">5</span></div>
+        <input type="range" min="1" max="20" value="5" id="cfg-max" oninput="updateCfg()">
+        <div class="range-ends"><span>1</span><span>20</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGS -->
+  <div class="page" id="page-logs">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:12px;color:var(--muted);font-weight:500" id="logCount">0 kayıt</span>
+      <button onclick="clearLogs()" style="font-size:12px;color:var(--muted);background:none;border:none;font-family:inherit;cursor:pointer;font-weight:600">Temizle</button>
+    </div>
+    <div class="log-box" id="logBox"></div>
+  </div>
+
+</div>
+
+<script>
+let cfg = { rise:30, pos:100, sl:50, tp:15, lev:10, max:5 };
+let running=false, timer=null;
+let positions={}, history=[], stats={trades:0,wins:0,losses:0,pnl:0,best:null,worst:null};
+let scanData=[], scanCount=0, lastTickers={};
+
+function showTab(name, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+}
+
+function updateCfg() {
+  cfg.rise=+document.getElementById('cfg-rise').value;
+  cfg.pos=+document.getElementById('cfg-pos').value;
+  cfg.sl=+document.getElementById('cfg-sl').value;
+  cfg.tp=+document.getElementById('cfg-tp').value;
+  cfg.lev=+document.getElementById('cfg-lev').value;
+  cfg.max=+document.getElementById('cfg-max').value;
+  document.getElementById('lbl-rise').textContent='%'+cfg.rise;
+  document.getElementById('lbl-pos').textContent='$'+cfg.pos;
+  document.getElementById('lbl-sl').textContent='%'+cfg.sl;
+  document.getElementById('lbl-tp').textContent='%'+cfg.tp;
+  document.getElementById('lbl-lev').textContent=cfg.lev+'x';
+  document.getElementById('lbl-max').textContent=cfg.max;
+  document.getElementById('statOpenSub').textContent='max '+cfg.max;
+  renderCfg();
+}
+
+function renderCfg() {
+  const rows=[
+    ['🎯 Eşik','+%'+cfg.rise,'var(--yellow)'],
+    ['💵 Pozisyon','$'+cfg.pos+' USDT','var(--blue)'],
+    ['⚡ Kaldıraç',cfg.lev+'x','var(--purple)'],
+    ['🛑 Stop Loss','%'+cfg.sl,'var(--red)'],
+    ['✅ Take Profit','%'+cfg.tp,'var(--green)'],
+    ['📊 Max Pozisyon',cfg.max,'var(--text)'],
+  ];
+  document.getElementById('cfgPreview').innerHTML=rows.map(([k,v,c])=>
+    `<div class="cfg-row"><span class="cfg-key">${k}</span><span class="cfg-val" style="color:${c}">${v}</span></div>`
+  ).join('');
+}
+
+let logLines=[];
+function addLog(msg,type='info'){
+  const time=new Date().toLocaleTimeString('tr-TR');
+  logLines.push({time,msg,type});
+  if(logLines.length>300) logLines.shift();
+  const colors={info:'log-info',success:'log-success',error:'log-error',warn:'log-warn',trade:'log-trade'};
+  const box=document.getElementById('logBox');
+  box.innerHTML=logLines.map(l=>`<div class="log-line"><span class="log-time">${l.time}</span><span class="${colors[l.type]||'log-info'}">${l.msg}</span></div>`).join('');
+  box.scrollTop=box.scrollHeight;
+  document.getElementById('logCount').textContent=logLines.length+' kayıt';
+}
+function clearLogs(){logLines=[];document.getElementById('logBox').innerHTML='';document.getElementById('logCount').textContent='0 kayıt';}
+
+async function fetchTickers(){
+  const url='https://fragrant-shadow-e17f.zalinapoyraz.workers.dev';
+  const r=await fetch(url);
+  const arr=await r.json();
+  if(!Array.isArray(arr)) throw new Error('Geçersiz veri');
+  const map={};
+  arr.forEach(d=>{
+    if(d.symbol&&d.symbol.endsWith('USDT')){
+      map[d.symbol]={pct:parseFloat(d.priceChangePercent),price:parseFloat(d.lastPrice),vol:parseFloat(d.quoteVolume)};
+    }
+  });
+  return map;
+}
+
+function openShort(symbol, price){
+  const sl=price*(1+cfg.sl/100);
+  const tp=price*(1-cfg.tp/100);
+  positions[symbol]={
+    entry:price, sl, tp,
+    openTime:Date.now(),
+    openTimeStr:new Date().toLocaleTimeString('tr-TR'),
+  };
+  addLog('🚨 SHORT AÇILDI: '+symbol+' @ $'+price.toFixed(4)+' | TP:$'+tp.toFixed(4)+' | SL:$'+sl.toFixed(4),'trade');
+}
+
+// Manuel kapat
+function closePosition(symbol, reason){
+  const pos=positions[symbol];
+  if(!pos) return;
+  const cur=lastTickers[symbol]?.price||pos.entry;
+  const pnlPct=(pos.entry-cur)/pos.entry*100;
+  const pnlU=pnlPct/100*cfg.pos*cfg.lev;
+  const tag=reason==='TP'?'✅ KAR AL':reason==='SL'?'❌ STOP LOSS':'🔵 MANUEL KAPANDI';
+  addLog(tag+': '+symbol+' @ $'+cur.toFixed(4)+' | '+(pnlU>=0?'+':'')+'$'+pnlU.toFixed(2),'trade');
+  if(pnlU>=0){stats.wins++;} else {stats.losses++;}
+  stats.trades++;stats.pnl+=pnlU;
+  if(stats.best===null||pnlU>stats.best) stats.best=pnlU;
+  if(stats.worst===null||pnlU<stats.worst) stats.worst=pnlU;
+  history.unshift({symbol,entry:pos.entry,exit:cur,reason,pnl:pnlU,time:new Date().toLocaleTimeString('tr-TR')});
+  delete positions[symbol];
+  renderAll(lastTickers);
+}
+
+function checkPositions(tickers){
+  for(const sym of Object.keys(positions)){
+    if(!tickers[sym]) continue;
+    const pos=positions[sym], cur=tickers[sym].price;
+    const pnlPct=(pos.entry-cur)/pos.entry*100;
+    const pnlU=pnlPct/100*cfg.pos*cfg.lev;
+    if(cur<=pos.tp){
+      addLog('✅ KAR AL: '+sym+' $'+pos.entry.toFixed(4)+'→$'+cur.toFixed(4)+' +$'+Math.abs(pnlU).toFixed(2),'success');
+      stats.trades++;stats.wins++;stats.pnl+=Math.abs(pnlU);
+      if(stats.best===null||pnlU>stats.best) stats.best=pnlU;
+      history.unshift({symbol:sym,entry:pos.entry,exit:cur,reason:'TP',pnl:pnlU,time:new Date().toLocaleTimeString('tr-TR')});
+      delete positions[sym];
+    } else if(cur>=pos.sl){
+      addLog('❌ STOP: '+sym+' $'+pos.entry.toFixed(4)+'→$'+cur.toFixed(4)+' -$'+Math.abs(pnlU).toFixed(2),'error');
+      stats.trades++;stats.losses++;stats.pnl-=Math.abs(pnlU);
+      if(stats.worst===null||pnlU<stats.worst) stats.worst=pnlU;
+      history.unshift({symbol:sym,entry:pos.entry,exit:cur,reason:'SL',pnl:pnlU,time:new Date().toLocaleTimeString('tr-TR')});
+      delete positions[sym];
+    }
+  }
+}
+
+function elapsed(ts){
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60) return s+'sn';
+  if(s<3600) return Math.floor(s/60)+'dk';
+  return Math.floor(s/3600)+'sa';
+}
+
+function renderAll(tickers){
+  lastTickers=tickers||lastTickers;
+  const posArr=Object.entries(positions);
+
+  // Total open PnL
+  let totalOpen=0;
+  posArr.forEach(([sym,pos])=>{
+    const cur=tickers?tickers[sym]?.price||pos.entry:pos.entry;
+    const pnl=(pos.entry-cur)/pos.entry*100/100*cfg.pos*cfg.lev;
+    totalOpen+=pnl;
+  });
+  const topEl=document.getElementById('totalOpenPnl');
+  topEl.textContent=(totalOpen>=0?'+':'')+'$'+totalOpen.toFixed(2);
+  topEl.style.color=totalOpen>=0?'var(--green)':'var(--red)';
+  document.getElementById('totalOpenPnlSub').textContent=posArr.length+' açık pozisyon';
+
+  const realEl=document.getElementById('totalRealizedPnl');
+  realEl.textContent=(stats.pnl>=0?'+':'')+'$'+stats.pnl.toFixed(2);
+  realEl.style.color=stats.pnl>=0?'var(--green)':'var(--red)';
+  document.getElementById('totalRealizedSub').textContent=stats.trades+' kapalı işlem';
+
+  // Stats
+  document.getElementById('statOpen').textContent=posArr.length;
+  const wr=stats.trades?Math.round(stats.wins/stats.trades*100):null;
+  const wrEl=document.getElementById('statWR');
+  wrEl.textContent=wr!==null?'%'+wr:'—';
+  wrEl.style.color=wr>=50?'var(--green)':wr!==null?'var(--red)':'var(--text)';
+  document.getElementById('statWRSub').textContent=stats.wins+'K / '+stats.losses+'K';
+  document.getElementById('statBest').textContent=stats.best!==null?(stats.best>=0?'+':'')+'$'+stats.best.toFixed(2):'—';
+  document.getElementById('statWorst').textContent=stats.worst!==null?(stats.worst>=0?'+':'')+'$'+stats.worst.toFixed(2):'—';
+
+  // Dashboard positions
+  const dEl=document.getElementById('dashPos');
+  if(!posArr.length){
+    dEl.innerHTML='<div class="empty">Açık pozisyon yok</div>';
+  } else {
+    dEl.innerHTML=posArr.map(([sym,pos])=>{
+      const cur=tickers?tickers[sym]?.price||pos.entry:pos.entry;
+      const pnl=(pos.entry-cur)/pos.entry*100/100*cfg.pos*cfg.lev;
+      const pnlPct=(pos.entry-cur)/pos.entry*100;
+      const isProfit=cur<pos.entry;
+      const progress=Math.min(100,Math.abs(pnlPct)/cfg.sl*100);
+      return `<div class="pos-card ${isProfit?'profit':'loss'}">
+        <div class="pos-header">
+          <div class="pos-sym">${sym.replace('USDT','')} <span class="tag tag-red">SHORT</span> <span class="tag tag-gray">${elapsed(pos.openTime)}</span></div>
+          <div class="pos-pnl" style="color:${isProfit?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}$${pnl.toFixed(2)}</div>
+        </div>
+        <div class="pos-grid">
+          <div class="pos-item"><div class="pos-item-label">Giriş</div><div class="pos-item-value">$${pos.entry.toFixed(4)}</div></div>
+          <div class="pos-item"><div class="pos-item-label">Anlık</div><div class="pos-item-value" style="color:${isProfit?'var(--green)':'var(--red)'}">$${cur.toFixed(4)}</div></div>
+          <div class="pos-item"><div class="pos-item-label">🛑 Stop Loss</div><div class="pos-item-value" style="color:var(--red)">$${pos.sl.toFixed(4)}</div></div>
+          <div class="pos-item"><div class="pos-item-label">✅ Take Profit</div><div class="pos-item-value" style="color:var(--green)">$${pos.tp.toFixed(4)}</div></div>
+        </div>
+        <div class="pos-actions">
+          <button class="btn-tp" onclick="closePosition('${sym}','TP')">✅ Kar Al</button>
+          <button class="btn-market" onclick="closePosition('${sym}','MANUEL')">🔵 Kapat</button>
+          <button class="btn-sl" onclick="closePosition('${sym}','SL')">🛑 Durdur</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Positions tab
+  const openSec=document.getElementById('openPosSection');
+  if(posArr.length){
+    openSec.innerHTML='<div class="card" style="margin-bottom:12px"><div class="card-title">🔴 Açık Pozisyonlar ('+posArr.length+')</div>'+
+    posArr.map(([sym,pos])=>{
+      const cur=tickers?tickers[sym]?.price||pos.entry:pos.entry;
+      const pnl=(pos.entry-cur)/pos.entry*100/100*cfg.pos*cfg.lev;
+      const isProfit=cur<pos.entry;
+      return `<div class="pos-card ${isProfit?'profit':'loss'}">
+        <div class="pos-header">
+          <div class="pos-sym">${sym.replace('USDT','')} <span class="tag tag-red">SHORT</span> <span class="tag tag-gray">${elapsed(pos.openTime)}</span></div>
+          <div class="pos-pnl" style="color:${isProfit?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}$${pnl.toFixed(2)}</div>
+        </div>
+        <div class="pos-grid">
+          <div class="pos-item"><div class="pos-item-label">Giriş</div><div class="pos-item-value">$${pos.entry.toFixed(4)}</div></div>
+          <div class="pos-item"><div class="pos-item-label">Anlık</div><div class="pos-item-value" style="color:${isProfit?'var(--green)':'var(--red)'}">$${cur.toFixed(4)}</div></div>
+          <div class="pos-item"><div class="pos-item-label">🛑 Stop</div><div class="pos-item-value" style="color:var(--red)">$${pos.sl.toFixed(4)}</div></div>
+          <div class="pos-item"><div class="pos-item-label">✅ TP</div><div class="pos-item-value" style="color:var(--green)">$${pos.tp.toFixed(4)}</div></div>
+        </div>
+        <div class="pos-actions">
+          <button class="btn-tp" onclick="closePosition('${sym}','TP')">✅ Kar Al</button>
+          <button class="btn-market" onclick="closePosition('${sym}','MANUEL')">🔵 Kapat</button>
+          <button class="btn-sl" onclick="closePosition('${sym}','SL')">🛑 Durdur</button>
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+  } else {
+    openSec.innerHTML='';
+  }
+
+  // History
+  const hEl=document.getElementById('histList');
+  if(!history.length){
+    hEl.innerHTML='<div class="empty">Henüz kapanan işlem yok</div>';
+  } else {
+    hEl.innerHTML=history.slice(0,30).map(h=>`
+      <div class="hist-row">
+        <div>
+          <div class="hist-sym">${h.symbol.replace('USDT','')} <span class="tag ${h.reason==='TP'?'tag-green':h.reason==='SL'?'tag-red':'tag-blue'}">${h.reason}</span></div>
+          <div class="hist-detail">$${h.entry.toFixed(4)} → $${h.exit.toFixed(4)} · ${h.time}</div>
+        </div>
+        <div class="hist-pnl" style="color:${h.pnl>=0?'var(--green)':'var(--red)'}">${h.pnl>=0?'+':''}$${h.pnl.toFixed(2)}</div>
+      </div>`).join('');
+  }
+
+  // Scanner
+  document.getElementById('scanTitle').textContent='🔍 Hareketli Coinler ('+scanData.length+')';
+  const sEl=document.getElementById('scanList');
+  if(!scanData.length){
+    sEl.innerHTML='<div class="empty">Veri bekleniyor…</div>';
+  } else {
+    sEl.innerHTML=scanData.map(([sym,t])=>{
+      const triggered=t.pct>=cfg.rise, hasPos=sym in positions;
+      return `<div class="scan-row">
+        <div>
+          <div class="scan-sym">${sym.replace('USDT','')}USDT ${hasPos?'<span class="tag tag-red">SHORT</span>':triggered?'<span class="tag tag-yellow">🚨</span>':''}</div>
+          <div class="scan-sub">$${t.price.toFixed(4)} · Vol $${(t.vol/1e6).toFixed(1)}M</div>
+        </div>
+        <div style="text-align:right">
+          <div class="scan-pct" style="color:${triggered?'var(--red)':'var(--yellow)'}">+${t.pct.toFixed(2)}%</div>
+          <div style="margin-top:4px">${triggered?'<span class="tag tag-red">EŞİK AŞILDI</span>':'<span class="tag tag-gray">İzlemede</span>'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+async function scanCycle(){
+  scanCount++;
+  addLog('Tarama #'+scanCount+'...');
+  try{
+    const tickers=await fetchTickers();
+    lastTickers=tickers;
+    addLog(Object.keys(tickers).length+' coin alındı','success');
+    checkPositions(tickers);
+    scanData=Object.entries(tickers).filter(([,t])=>t.pct>=cfg.rise*0.6&&t.vol>200000).sort((a,b)=>b[1].pct-a[1].pct).slice(0,20);
+    if(Object.keys(positions).length<cfg.max){
+      const cands=Object.entries(tickers).filter(([s,t])=>t.pct>=cfg.rise&&!(s in positions)&&t.vol>500000).sort((a,b)=>b[1].pct-a[1].pct);
+      for(const [sym,t] of cands){
+        if(Object.keys(positions).length>=cfg.max) break;
+        addLog('⚠️ EŞİK: '+sym+' +'+t.pct.toFixed(1)+'%','warn');
+        openShort(sym,t.price);
+      }
+    }
+    renderAll(tickers);
+    addLog('Açık: '+Object.keys(positions).length+'/'+cfg.max+' | Sonraki: 15sn');
+  } catch(e){
+    addLog('Hata: '+e.message,'error');
+  }
+}
+
+function toggleBot(){
+  if(!running) startBot(); else stopBot();
+}
+function startBot(){
+  running=true;
+  const btn=document.getElementById('mainBtn');
+  if(btn){btn.textContent='Durdur';btn.className='btn-stop';}
+  const hs=document.getElementById('headerStatus');
+  if(hs) hs.textContent='Çalışıyor';
+  const dot=document.getElementById('dot');
+  if(dot) dot.classList.add('on');
+  addLog('Bot başlatıldı | Eşik:+%'+cfg.rise+' | $'+cfg.pos+' | TP:%'+cfg.tp+' | SL:%'+cfg.sl,'success');
+  scanCycle();
+  timer=setInterval(scanCycle,15000);
+}
+function stopBot(){
+  running=false; clearInterval(timer);
+  const btn=document.getElementById('mainBtn');
+  if(btn){btn.textContent='Başlat';btn.className='btn-start';}
+  const hs=document.getElementById('headerStatus');
+  if(hs) hs.textContent='Durduruldu';
+  const dot=document.getElementById('dot');
+  if(dot) dot.classList.remove('on');
+  addLog('Bot durduruldu.','warn');
+}
+
+updateCfg(); renderAll(null);
+</script>
+</body>
+</html>
